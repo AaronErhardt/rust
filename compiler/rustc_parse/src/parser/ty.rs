@@ -203,7 +203,7 @@ impl<'a> Parser<'a> {
         } else if self.check(&token::BinOp(token::And)) || self.check(&token::AndAnd) {
             // Reference
             self.expect_and()?;
-            self.parse_borrowed_pointee()?
+            self.parse_borrowed_pointer()?
         } else if self.eat_keyword_noexpect(kw::Typeof) {
             self.parse_typeof_ty()?
         } else if self.eat_keyword(kw::Underscore) {
@@ -369,7 +369,7 @@ impl<'a> Parser<'a> {
         Ok(ty)
     }
 
-    fn parse_borrowed_pointee(&mut self) -> PResult<'a, TyKind> {
+    fn parse_borrowed_pointer(&mut self) -> PResult<'a, TyKind> {
         let and_span = self.prev_token.span;
         let mut opt_lifetime =
             if self.check_lifetime() { Some(self.expect_lifetime()) } else { None };

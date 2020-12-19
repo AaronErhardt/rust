@@ -570,10 +570,10 @@ fn codegen_stmt<'tcx>(
                         ty.builtin_deref(true)
                             .map(
                                 |ty::TypeAndMut {
-                                     ty: pointee_ty,
+                                     ty: pointer_ty,
                                      mutbl: _,
                                  }| {
-                                    has_ptr_meta(fx.tcx, pointee_ty)
+                                    has_ptr_meta(fx.tcx, pointer_ty)
                                 },
                             )
                             .unwrap_or(false)

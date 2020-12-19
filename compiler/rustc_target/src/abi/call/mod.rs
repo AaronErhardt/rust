@@ -82,8 +82,8 @@ pub struct ArgAttributes {
     pub arg_ext: ArgExtension,
     /// The minimum size of the pointer, guaranteed to be valid for the duration of the whole call
     /// (corresponding to LLVM's dereferenceable and dereferenceable_or_null attributes).
-    pub pointee_size: Size,
-    pub pointee_align: Option<Align>,
+    pub pointer_size: Size,
+    pub pointer_align: Option<Align>,
 }
 
 impl ArgAttributes {
@@ -91,8 +91,8 @@ impl ArgAttributes {
         ArgAttributes {
             regular: ArgAttribute::default(),
             arg_ext: ArgExtension::None,
-            pointee_size: Size::ZERO,
-            pointee_align: None,
+            pointer_size: Size::ZERO,
+            pointer_align: None,
         }
     }
 
@@ -448,7 +448,7 @@ impl<'a, Ty> ArgAbi<'a, Ty> {
         // the value on the stack, so there are no aliases. It's also
         // program-invisible so can't possibly capture
         attrs.set(ArgAttribute::NoAlias).set(ArgAttribute::NoCapture).set(ArgAttribute::NonNull);
-        attrs.pointee_size = self.layout.size;
+        attrs.pointer_size = self.layout.size;
         // FIXME(eddyb) We should be doing this, but at least on
         // i686-pc-windows-msvc, it results in wrong stack offsets.
         // attrs.pointer_align = Some(self.layout.align.abi);

@@ -8,7 +8,7 @@ use rustc_middle::ty::print::with_no_trimmed_paths;
 use rustc_middle::ty::{self, Ty, TypeFoldable};
 use rustc_target::abi::{Abi, AddressSpace, Align, FieldsShape};
 use rustc_target::abi::{Int, Pointer, F32, F64};
-use rustc_target::abi::{LayoutOf, PointeeInfo, Scalar, Size, TyAndLayoutMethods, Variants};
+use rustc_target::abi::{LayoutOf, PointerInfo, Scalar, Size, TyAndLayoutMethods, Variants};
 use tracing::debug;
 
 use std::fmt::Write;
@@ -178,7 +178,7 @@ pub trait LayoutLlvmExt<'tcx> {
         immediate: bool,
     ) -> &'a Type;
     fn llvm_field_index(&self, index: usize) -> u64;
-    fn pointee_info_at<'a>(&self, cx: &CodegenCx<'a, 'tcx>, offset: Size) -> Option<PointeeInfo>;
+    fn pointer_info_at<'a>(&self, cx: &CodegenCx<'a, 'tcx>, offset: Size) -> Option<PointerInfo>;
 }
 
 impl<'tcx> LayoutLlvmExt<'tcx> for TyAndLayout<'tcx> {
@@ -289,13 +289,13 @@ impl<'tcx> LayoutLlvmExt<'tcx> for TyAndLayout<'tcx> {
             F64 => cx.type_f64(),
             Pointer => {
                 // If we know the alignment, pick something better than i8.
-                let (pointee, address_space) =
-                    if let Some(pointee) = self.pointee_info_at(cx, offset) {
-                        (cx.type_pointee_for_align(pointee.align), pointee.address_space)
+                let (pointer, address_space) =
+                    if let Some(pointer) = self.pointer_info_at(cx, offset) {
+                        (cx.type_pointer_for_align(pointer.align), pointer.address_space)
                     } else {
                         (cx.type_i8(), AddressSpace::DATA)
                     };
-                cx.type_ptr_to_ext(pointee, address_space)
+                cx.type_ptr_to_ext(pointer, address_space)
             }
         }
     }
@@ -307,7 +307,7 @@ impl<'tcx> LayoutLlvmExt<'tcx> for TyAndLayout<'tcx> {
         immediate: bool,
     ) -> &'a Type {
         // HACK(eddyb) special-case fat pointers until LLVM removes
-        // pointee types, to avoid bitcasting every `OperandRef::deref`.
+        // pointer types, to avoid bitcasting every `OperandRef::deref`.
         match self.ty.kind() {
             ty::Ref(..) | ty::RawPtr(_) => {
                 return self.field(cx, index).llvm_type(cx);
@@ -358,14 +358,14 @@ impl<'tcx> LayoutLlvmExt<'tcx> for TyAndLayout<'tcx> {
         }
     }
 
-    fn pointee_info_at<'a>(&self, cx: &CodegenCx<'a, 'tcx>, offset: Size) -> Option<PointeeInfo> {
-        if let Some(&pointee) = cx.pointee_infos.borrow().get(&(self.ty, offset)) {
-            return pointee;
+    fn pointer_info_at<'a>(&self, cx: &CodegenCx<'a, 'tcx>, offset: Size) -> Option<PointerInfo> {
+        if let Some(&pointer) = cx.pointer_infos.borrow().get(&(self.ty, offset)) {
+            return pointer;
         }
 
-        let result = Ty::pointee_info_at(*self, cx, offset);
+        let result = Ty::pointer_info_at(*self, cx, offset);
 
-        cx.pointee_infos.borrow_mut().insert((self.ty, offset), result);
+        cx.pointer_infos.borrow_mut().insert((self.ty, offset), result);
         result
     }
 }

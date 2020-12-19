@@ -268,10 +268,10 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
         cast_ty: Ty<'tcx>,
     ) -> InterpResult<'tcx> {
         // A<Struct> -> A<Trait> conversion
-        let (src_pointee_ty, dest_pointee_ty) =
+        let (src_pointer_ty, dest_pointer_ty) =
             self.tcx.struct_lockstep_tails_erasing_lifetimes(source_ty, cast_ty, self.param_env);
 
-        match (&src_pointee_ty.kind(), &dest_pointee_ty.kind()) {
+        match (&src_pointer_ty.kind(), &dest_pointer_ty.kind()) {
             (&ty::Array(_, length), &ty::Slice(_)) => {
                 let ptr = self.read_immediate(src)?.to_scalar()?;
                 // u64 cast is from usize to u64, which is always good
@@ -288,7 +288,7 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
             }
             (_, &ty::Dynamic(ref data, _)) => {
                 // Initial cast from sized to dyn trait
-                let vtable = self.get_vtable(src_pointee_ty, data.principal())?;
+                let vtable = self.get_vtable(src_pointer_ty, data.principal())?;
                 let ptr = self.read_immediate(src)?.to_scalar()?;
                 let val = Immediate::new_dyn_trait(ptr, vtable);
                 self.write_immediate(val, dest)

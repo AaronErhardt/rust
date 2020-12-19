@@ -21,7 +21,7 @@ use rustc_session::config::{CFGuard, CrateType, DebugInfo};
 use rustc_session::Session;
 use rustc_span::source_map::{Span, DUMMY_SP};
 use rustc_span::symbol::Symbol;
-use rustc_target::abi::{HasDataLayout, LayoutOf, PointeeInfo, Size, TargetDataLayout, VariantIdx};
+use rustc_target::abi::{HasDataLayout, LayoutOf, PointerInfo, Size, TargetDataLayout, VariantIdx};
 use rustc_target::spec::{HasTargetSpec, RelocModel, Target, TlsModel};
 
 use std::cell::{Cell, RefCell};
@@ -75,7 +75,7 @@ pub struct CodegenCx<'ll, 'tcx> {
 
     pub lltypes: RefCell<FxHashMap<(Ty<'tcx>, Option<VariantIdx>), &'ll Type>>,
     pub scalar_lltypes: RefCell<FxHashMap<Ty<'tcx>, &'ll Type>>,
-    pub pointee_infos: RefCell<FxHashMap<(Ty<'tcx>, Size), Option<PointeeInfo>>>,
+    pub pointer_infos: RefCell<FxHashMap<(Ty<'tcx>, Size), Option<PointerInfo>>>,
     pub isize_ty: &'ll Type,
 
     pub coverage_cx: Option<coverageinfo::CrateCoverageContext<'tcx>>,
@@ -299,7 +299,7 @@ impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
             used_statics: RefCell::new(Vec::new()),
             lltypes: Default::default(),
             scalar_lltypes: Default::default(),
-            pointee_infos: Default::default(),
+            pointer_infos: Default::default(),
             isize_ty,
             coverage_cx,
             dbg_cx,

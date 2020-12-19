@@ -576,8 +576,8 @@ pub(crate) fn codegen_intrinsic_call<'tcx>(
             }
         };
         discriminant_value, (c ptr) {
-            let pointee_layout = fx.layout_of(ptr.layout().ty.builtin_deref(true).unwrap().ty);
-            let val = CValue::by_ref(Pointer::new(ptr.load_scalar(fx)), pointee_layout);
+            let pointer_layout = fx.layout_of(ptr.layout().ty.builtin_deref(true).unwrap().ty);
+            let val = CValue::by_ref(Pointer::new(ptr.load_scalar(fx)), pointer_layout);
             let discr = crate::discriminant::codegen_get_discriminant(fx, val, ret.layout());
             ret.write_cvalue(fx, discr);
         };
@@ -718,10 +718,10 @@ pub(crate) fn codegen_intrinsic_call<'tcx>(
         // The only difference between offset and arith_offset is regarding UB. Because Cranelift
         // doesn't have UB both are codegen'ed the same way
         offset | arith_offset, (c base, v offset) {
-            let pointee_ty = base.layout().ty.builtin_deref(true).unwrap().ty;
-            let pointee_size = fx.layout_of(pointee_ty).size.bytes();
-            let ptr_diff = if pointee_size != 1 {
-                fx.bcx.ins().imul_imm(offset, pointee_size as i64)
+            let pointer_ty = base.layout().ty.builtin_deref(true).unwrap().ty;
+            let pointer_size = fx.layout_of(pointer_ty).size.bytes();
+            let ptr_diff = if pointer_size != 1 {
+                fx.bcx.ins().imul_imm(offset, pointer_size as i64)
             } else {
                 offset
             };
@@ -734,10 +734,10 @@ pub(crate) fn codegen_intrinsic_call<'tcx>(
             ret.write_cvalue_transmute(fx, from);
         };
         write_bytes | volatile_set_memory, (c dst, v val, v count) {
-            let pointee_ty = dst.layout().ty.builtin_deref(true).unwrap().ty;
-            let pointee_size = fx.layout_of(pointee_ty).size.bytes();
-            let count = if pointee_size != 1 {
-                fx.bcx.ins().imul_imm(count, pointee_size as i64)
+            let pointer_ty = dst.layout().ty.builtin_deref(true).unwrap().ty;
+            let pointer_size = fx.layout_of(pointer_ty).size.bytes();
+            let count = if pointer_size != 1 {
+                fx.bcx.ins().imul_imm(count, pointer_size as i64)
             } else {
                 count
             };
@@ -930,10 +930,10 @@ pub(crate) fn codegen_intrinsic_call<'tcx>(
         ptr_offset_from, <T> (v ptr, v base) {
             let isize_layout = fx.layout_of(fx.tcx.types.isize);
 
-            let pointee_size: u64 = fx.layout_of(T).size.bytes();
+            let pointer_size: u64 = fx.layout_of(T).size.bytes();
             let diff = fx.bcx.ins().isub(ptr, base);
             // FIXME this can be an exact division.
-            let val = CValue::by_val(fx.bcx.ins().sdiv_imm(diff, pointee_size as i64), isize_layout);
+            let val = CValue::by_val(fx.bcx.ins().sdiv_imm(diff, pointer_size as i64), isize_layout);
             ret.write_cvalue(fx, val);
         };
 

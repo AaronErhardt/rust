@@ -551,7 +551,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
 
             sym::ptr_offset_from => {
                 let ty = substs.type_at(0);
-                let pointee_size = bx.layout_of(ty).size;
+                let pointer_size = bx.layout_of(ty).size;
 
                 // This is the same sequence that Clang emits for pointer subtraction.
                 // It can be neither `nsw` nor `nuw` because the input is treated as
@@ -561,9 +561,9 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                 let a = bx.ptrtoint(a, bx.type_isize());
                 let b = bx.ptrtoint(b, bx.type_isize());
                 let d = bx.sub(a, b);
-                let pointee_size = bx.const_usize(pointee_size.bytes());
+                let pointer_size = bx.const_usize(pointer_size.bytes());
                 // this is where the signed magic happens (notice the `s` in `exactsdiv`)
-                bx.exactsdiv(d, pointee_size)
+                bx.exactsdiv(d, pointer_size)
             }
 
             _ => {

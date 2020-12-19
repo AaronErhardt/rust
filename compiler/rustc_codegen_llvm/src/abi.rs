@@ -49,7 +49,7 @@ impl ArgAttributesExt for ArgAttributes {
     fn apply_attrs_to_llfn(&self, idx: AttributePlace, llfn: &Value) {
         let mut regular = self.regular;
         unsafe {
-            let deref = self.pointee_size.bytes();
+            let deref = self.pointer_size.bytes();
             if deref != 0 {
                 if regular.contains(ArgAttribute::NonNull) {
                     llvm::LLVMRustAddDereferenceableAttr(llfn, idx.as_uint(), deref);
@@ -58,7 +58,7 @@ impl ArgAttributesExt for ArgAttributes {
                 }
                 regular -= ArgAttribute::NonNull;
             }
-            if let Some(align) = self.pointee_align {
+            if let Some(align) = self.pointer_align {
                 llvm::LLVMRustAddAlignmentAttr(llfn, idx.as_uint(), align.bytes() as u32);
             }
             regular.for_each_kind(|attr| attr.apply_llfn(idx, llfn));
@@ -77,7 +77,7 @@ impl ArgAttributesExt for ArgAttributes {
     fn apply_attrs_to_callsite(&self, idx: AttributePlace, callsite: &Value) {
         let mut regular = self.regular;
         unsafe {
-            let deref = self.pointee_size.bytes();
+            let deref = self.pointer_size.bytes();
             if deref != 0 {
                 if regular.contains(ArgAttribute::NonNull) {
                     llvm::LLVMRustAddDereferenceableCallSiteAttr(callsite, idx.as_uint(), deref);
@@ -90,7 +90,7 @@ impl ArgAttributesExt for ArgAttributes {
                 }
                 regular -= ArgAttribute::NonNull;
             }
-            if let Some(align) = self.pointee_align {
+            if let Some(align) = self.pointer_align {
                 llvm::LLVMRustAddAlignmentCallSiteAttr(
                     callsite,
                     idx.as_uint(),

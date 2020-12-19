@@ -289,9 +289,9 @@ where
         &self,
         val: ImmTy<'tcx, M::PointerTag>,
     ) -> InterpResult<'tcx, MPlaceTy<'tcx, M::PointerTag>> {
-        let pointee_type =
+        let pointer_type =
             val.layout.ty.builtin_deref(true).expect("`ref_to_mplace` called on non-ptr type").ty;
-        let layout = self.layout_of(pointee_type)?;
+        let layout = self.layout_of(pointer_type)?;
         let (ptr, meta) = match *val {
             Immediate::Scalar(ptr) => (ptr.check_init()?, MemPlaceMeta::None),
             Immediate::ScalarPair(ptr, meta) => {

@@ -579,7 +579,7 @@ pub fn type_metadata(cx: &CodegenCx<'ll, 'tcx>, t: Ty<'tcx>, usage_site_span: Sp
             false,
         )),
         _ => {
-            let pointee_metadata = type_metadata(cx, ty, usage_site_span);
+            let pointer_metadata = type_metadata(cx, ty, usage_site_span);
 
             if let Some(metadata) =
                 debug_context(cx).type_map.borrow().find_metadata_for_unique_id(unique_type_id)
@@ -587,7 +587,7 @@ pub fn type_metadata(cx: &CodegenCx<'ll, 'tcx>, t: Ty<'tcx>, usage_site_span: Sp
                 return Err(metadata);
             }
 
-            Ok(MetadataCreationResult::new(pointer_type_metadata(cx, t, pointee_metadata), false))
+            Ok(MetadataCreationResult::new(pointer_type_metadata(cx, t, pointer_metadata), false))
         }
     };
 
@@ -936,14 +936,14 @@ fn foreign_type_metadata(
 fn pointer_type_metadata(
     cx: &CodegenCx<'ll, 'tcx>,
     pointer_type: Ty<'tcx>,
-    pointee_type_metadata: &'ll DIType,
+    pointer_type_metadata: &'ll DIType,
 ) -> &'ll DIType {
     let (pointer_size, pointer_align) = cx.size_and_align_of(pointer_type);
     let name = compute_debuginfo_type_name(cx.tcx, pointer_type, false);
     unsafe {
         llvm::LLVMRustDIBuilderCreatePointerType(
             DIB(cx),
-            pointee_type_metadata,
+            pointer_type_metadata,
             pointer_size.bits(),
             pointer_align.bits() as u32,
             0, // Ignore DWARF address space.

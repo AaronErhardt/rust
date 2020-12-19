@@ -1888,7 +1888,7 @@ extern "C" {
 
     pub fn LLVMRustDIBuilderCreatePointerType(
         Builder: &DIBuilder<'a>,
-        PointeeTy: &'a DIType,
+        PointerTy: &'a DIType,
         SizeInBits: u64,
         AlignInBits: u32,
         AddressSpace: c_uint,

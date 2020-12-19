@@ -58,7 +58,7 @@ fn get_size_of_ty(cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) -> Option<Ty<'tc
     }
 }
 
-fn get_pointee_ty_and_count_expr(cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) -> Option<(Ty<'tcx>, &'tcx Expr<'tcx>)> {
+fn get_pointer_ty_and_count_expr(cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) -> Option<(Ty<'tcx>, &'tcx Expr<'tcx>)> {
     const FUNCTIONS: [&[&str]; 8] = [
         &paths::COPY_NONOVERLAPPING,
         &paths::COPY,
@@ -91,10 +91,10 @@ fn get_pointee_ty_and_count_expr(cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) -
         if let Some(def_id) = cx.qpath_res(func_qpath, func.hir_id).opt_def_id();
         if FUNCTIONS.iter().any(|func_path| match_def_path(cx, def_id, func_path));
 
-        // Get the pointee type
-        if let Some(pointee_ty) = cx.typeck_results().node_substs(func.hir_id).types().next();
+        // Get the pointer type
+        if let Some(pointer_ty) = cx.typeck_results().node_substs(func.hir_id).types().next();
         then {
-            return Some((pointee_ty, count));
+            return Some((pointer_ty, count));
         }
     };
     if_chain! {
@@ -103,11 +103,11 @@ fn get_pointee_ty_and_count_expr(cx: &LateContext<'tcx>, expr: &'tcx Expr<'_>) -
         let method_ident = method_path.ident.as_str();
         if METHODS.iter().any(|m| *m == &*method_ident);
 
-        // Get the pointee type
-        if let ty::RawPtr(TypeAndMut { ty: pointee_ty, .. }) =
+        // Get the pointer type
+        if let ty::RawPtr(TypeAndMut { ty: pointer_ty, .. }) =
             cx.typeck_results().expr_ty(ptr_self).kind();
         then {
-            return Some((pointee_ty, count));
+            return Some((pointer_ty, count));
         }
     };
     None
@@ -123,13 +123,13 @@ impl<'tcx> LateLintPass<'tcx> for SizeOfInElementCount {
 
         if_chain! {
             // Find calls to functions with an element count parameter and get
-            if let Some((pointee_ty, count_expr)) = get_pointee_ty_and_count_expr(cx, expr);
             // the pointer type and count parameter expression
+            if let Some((pointer_ty, count_expr)) = get_pointer_ty_and_count_expr(cx, expr);
 
             // Find a size_of call in the count parameter expression and
             // check that it's the same type
             if let Some(ty_used_for_size_of) = get_size_of_ty(cx, count_expr);
-            if TyS::same_type(pointee_ty, ty_used_for_size_of);
+            if TyS::same_type(pointer_ty, ty_used_for_size_of);
             then {
                 span_lint_and_help(
                     cx,

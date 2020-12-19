@@ -180,9 +180,9 @@ impl<'tcx> DebugContext<'tcx> {
             ty::Uint(_) => primitive(&mut self.dwarf, gimli::DW_ATE_unsigned),
             ty::Int(_) => primitive(&mut self.dwarf, gimli::DW_ATE_signed),
             ty::Float(_) => primitive(&mut self.dwarf, gimli::DW_ATE_float),
-            ty::Ref(_, pointee_ty, _mutbl)
+            ty::Ref(_, pointer_ty, _mutbl)
             | ty::RawPtr(ty::TypeAndMut {
-                ty: pointee_ty,
+                ty: pointer_ty,
                 mutbl: _mutbl,
             }) => {
                 let type_id = new_entry(&mut self.dwarf, gimli::DW_TAG_pointer_type);
@@ -190,12 +190,12 @@ impl<'tcx> DebugContext<'tcx> {
                 // Ensure that type is inserted before recursing to avoid duplicates
                 self.types.insert(ty, type_id);
 
-                let pointee = self.dwarf_ty(pointee_ty);
+                let pointer = self.dwarf_ty(pointer_ty);
 
                 let type_entry = self.dwarf.unit.get_mut(type_id);
 
                 //type_entry.set(gimli::DW_AT_mutable, AttributeValue::Flag(mutbl == rustc_hir::Mutability::Mut));
-                type_entry.set(gimli::DW_AT_type, AttributeValue::UnitRef(pointee));
+                type_entry.set(gimli::DW_AT_type, AttributeValue::UnitRef(pointer));
 
                 type_id
             }

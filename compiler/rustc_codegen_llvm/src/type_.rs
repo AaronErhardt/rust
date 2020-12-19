@@ -109,7 +109,7 @@ impl CodegenCx<'ll, 'tcx> {
         }
     }
 
-    crate fn type_pointee_for_align(&self, align: Align) -> &'ll Type {
+    crate fn type_pointer_for_align(&self, align: Align) -> &'ll Type {
         // FIXME(eddyb) We could find a better approximation if ity.align < align.
         let ity = Integer::approximate_align(self, align);
         self.type_from_integer(ity)

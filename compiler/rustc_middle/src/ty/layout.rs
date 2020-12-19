@@ -510,18 +510,18 @@ impl<'tcx> LayoutCx<'tcx, TyCtxt<'tcx>> {
             }),
 
             // Potentially-wide pointers.
-            ty::Ref(_, pointee, _) | ty::RawPtr(ty::TypeAndMut { ty: pointee, .. }) => {
+            ty::Ref(_, pointer, _) | ty::RawPtr(ty::TypeAndMut { ty: pointer, .. }) => {
                 let mut data_ptr = scalar_unit(Pointer);
                 if !ty.is_unsafe_ptr() {
                     data_ptr.valid_range = 1..=*data_ptr.valid_range.end();
                 }
 
-                let pointee = tcx.normalize_erasing_regions(param_env, pointee);
-                if pointee.is_sized(tcx.at(DUMMY_SP), param_env) {
+                let pointer = tcx.normalize_erasing_regions(param_env, pointer);
+                if pointer.is_sized(tcx.at(DUMMY_SP), param_env) {
                     return Ok(tcx.intern_layout(Layout::scalar(self, data_ptr)));
                 }
 
-                let unsized_part = tcx.struct_tail_erasing_lifetimes(pointee, param_env);
+                let unsized_part = tcx.struct_tail_erasing_lifetimes(pointer, param_env);
                 let metadata = match unsized_part.kind() {
                     ty::Foreign(..) => {
                         return Ok(tcx.intern_layout(Layout::scalar(self, data_ptr)));
@@ -1826,9 +1826,9 @@ impl<'tcx> SizeSkeleton<'tcx> {
         };
 
         match *ty.kind() {
-            ty::Ref(_, pointee, _) | ty::RawPtr(ty::TypeAndMut { ty: pointee, .. }) => {
+            ty::Ref(_, pointer, _) | ty::RawPtr(ty::TypeAndMut { ty: pointer, .. }) => {
                 let non_zero = !ty.is_unsafe_ptr();
-                let tail = tcx.struct_tail_erasing_lifetimes(pointee, param_env);
+                let tail = tcx.struct_tail_erasing_lifetimes(pointer, param_env);
                 match tail.kind() {
                     ty::Param(_) | ty::Projection(_) => {
                         debug_assert!(tail.has_param_types_or_consts());
@@ -2143,7 +2143,7 @@ where
                 | ty::Dynamic(..) => bug!("TyAndLayout::field_type({:?}): not applicable", this),
 
                 // Potentially-fat pointers.
-                ty::Ref(_, pointee, _) | ty::RawPtr(ty::TypeAndMut { ty: pointee, .. }) => {
+                ty::Ref(_, pointer, _) | ty::RawPtr(ty::TypeAndMut { ty: pointer, .. }) => {
                     assert!(i < this.fields.count());
 
                     // Reuse the fat `*T` type as its own thin pointer data field.
@@ -2165,7 +2165,7 @@ where
                         ));
                     }
 
-                    match tcx.struct_tail_erasing_lifetimes(pointee, cx.param_env()).kind() {
+                    match tcx.struct_tail_erasing_lifetimes(pointer, cx.param_env()).kind() {
                         ty::Slice(_) | ty::Str => TyMaybeWithLayout::Ty(tcx.types.usize),
                         ty::Dynamic(_, _) => {
                             TyMaybeWithLayout::Ty(tcx.mk_imm_ref(
@@ -2250,14 +2250,14 @@ where
         })
     }
 
-    fn pointee_info_at(this: TyAndLayout<'tcx>, cx: &C, offset: Size) -> Option<PointeeInfo> {
+    fn pointer_info_at(this: TyAndLayout<'tcx>, cx: &C, offset: Size) -> Option<PointerInfo> {
         let addr_space_of_ty = |ty: Ty<'tcx>| {
             if ty.is_fn() { cx.data_layout().instruction_address_space } else { AddressSpace::DATA }
         };
 
-        let pointee_info = match *this.ty.kind() {
+        let pointer_info = match *this.ty.kind() {
             ty::RawPtr(mt) if offset.bytes() == 0 => {
-                cx.layout_of(mt.ty).to_result().ok().map(|layout| PointeeInfo {
+                cx.layout_of(mt.ty).to_result().ok().map(|layout| PointerInfo {
                     size: layout.size,
                     align: layout.align.abi,
                     safe: None,
@@ -2266,7 +2266,7 @@ where
             }
             ty::FnPtr(fn_sig) if offset.bytes() == 0 => {
                 cx.layout_of(cx.tcx().mk_fn_ptr(fn_sig)).to_result().ok().map(|layout| {
-                    PointeeInfo {
+                    PointerInfo {
                         size: layout.size,
                         align: layout.align.abi,
                         safe: None,
@@ -2306,7 +2306,7 @@ where
                     }
                 };
 
-                cx.layout_of(ty).to_result().ok().map(|layout| PointeeInfo {
+                cx.layout_of(ty).to_result().ok().map(|layout| PointerInfo {
                     size: layout.size,
                     align: layout.align.abi,
                     safe: Some(kind),
@@ -2356,7 +2356,7 @@ where
                                 if ptr_end <= field_start + field.size {
                                     // We found the right field, look inside it.
                                     let field_info =
-                                        field.pointee_info_at(cx, offset - field_start);
+                                        field.pointer_info_at(cx, offset - field_start);
                                     field_info
                                 } else {
                                     None
@@ -2370,10 +2370,10 @@ where
                 }
 
                 // FIXME(eddyb) This should be for `ptr::Unique<T>`, not `Box<T>`.
-                if let Some(ref mut pointee) = result {
+                if let Some(ref mut pointer) = result {
                     if let ty::Adt(def, _) = this.ty.kind() {
                         if def.is_box() && offset.bytes() == 0 {
-                            pointee.safe = Some(PointerKind::UniqueOwned);
+                            pointer.safe = Some(PointerKind::UniqueOwned);
                         }
                     }
                 }
@@ -2383,13 +2383,13 @@ where
         };
 
         debug!(
-            "pointee_info_at (offset={:?}, type kind: {:?}) => {:?}",
+            "pointer_info_at (offset={:?}, type kind: {:?}) => {:?}",
             offset,
             this.ty.kind(),
-            pointee_info
+            pointer_info
         );
 
-        pointee_info
+        pointer_info
     }
 }
 
@@ -2737,16 +2737,16 @@ where
                 }
             }
 
-            if let Some(pointee) = layout.pointee_info_at(cx, offset) {
-                if let Some(kind) = pointee.safe {
-                    attrs.pointee_align = Some(pointee.align);
+            if let Some(pointer) = layout.pointer_info_at(cx, offset) {
+                if let Some(kind) = pointer.safe {
+                    attrs.pointer_align = Some(pointer.align);
 
                     // `Box` (`UniqueBorrowed`) are not necessarily dereferenceable
                     // for the entire duration of the function as they can be deallocated
                     // at any time. Set their valid size to 0.
-                    attrs.pointee_size = match kind {
+                    attrs.pointer_size = match kind {
                         PointerKind::UniqueOwned => Size::ZERO,
-                        _ => pointee.size,
+                        _ => pointer.size,
                     };
 
                     // `Box` pointer parameters never alias because ownership is transferred

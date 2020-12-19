@@ -311,9 +311,9 @@ impl<'rt, 'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> ValidityVisitor<'rt, 'mir, '
     fn check_wide_ptr_meta(
         &mut self,
         meta: MemPlaceMeta<M::PointerTag>,
-        pointee: TyAndLayout<'tcx>,
+        pointer: TyAndLayout<'tcx>,
     ) -> InterpResult<'tcx> {
-        let tail = self.ecx.tcx.struct_tail_erasing_lifetimes(pointee.ty, self.ecx.param_env);
+        let tail = self.ecx.tcx.struct_tail_erasing_lifetimes(pointer.ty, self.ecx.param_env);
         match tail.kind() {
             ty::Dynamic(..) => {
                 let vtable = meta.unwrap_meta();

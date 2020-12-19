@@ -1057,7 +1057,7 @@ pub enum PointerKind {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct PointeeInfo {
+pub struct PointerInfo {
     pub size: Size,
     pub align: Align,
     pub safe: Option<PointerKind>,
@@ -1071,7 +1071,7 @@ pub trait TyAndLayoutMethods<'a, C: LayoutOf<Ty = Self>>: Sized {
         variant_index: VariantIdx,
     ) -> TyAndLayout<'a, Self>;
     fn field(this: TyAndLayout<'a, Self>, cx: &C, i: usize) -> C::TyAndLayout;
-    fn pointee_info_at(this: TyAndLayout<'a, Self>, cx: &C, offset: Size) -> Option<PointeeInfo>;
+    fn pointer_info_at(this: TyAndLayout<'a, Self>, cx: &C, offset: Size) -> Option<PointerInfo>;
 }
 
 impl<'a, Ty> TyAndLayout<'a, Ty> {
@@ -1093,12 +1093,12 @@ impl<'a, Ty> TyAndLayout<'a, Ty> {
         Ty::field(self, cx, i)
     }
 
-    pub fn pointee_info_at<C>(self, cx: &C, offset: Size) -> Option<PointeeInfo>
+    pub fn pointer_info_at<C>(self, cx: &C, offset: Size) -> Option<PointerInfo>
     where
         Ty: TyAndLayoutMethods<'a, C>,
         C: LayoutOf<Ty = Ty>,
     {
-        Ty::pointee_info_at(self, cx, offset)
+        Ty::pointer_info_at(self, cx, offset)
     }
 }
 

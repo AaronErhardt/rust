@@ -378,7 +378,7 @@ impl<'a, 'tcx> ConstToPat<'a, 'tcx> {
                 slice: None,
                 suffix: Vec::new(),
             },
-            ty::Ref(_, pointee_ty, ..) => match *pointee_ty.kind() {
+            ty::Ref(_, pointer_ty, ..) => match *pointer_ty.kind() {
                 // These are not allowed and will error elsewhere anyway.
                 ty::Dynamic(..) => {
                     self.saw_const_match_error.set(true);
@@ -415,7 +415,7 @@ impl<'a, 'tcx> ConstToPat<'a, 'tcx> {
                                 suffix: vec![],
                             }),
                             span,
-                            ty: pointee_ty,
+                            ty: pointer_ty,
                         },
                     };
                     self.behind_reference.set(old);
@@ -452,7 +452,7 @@ impl<'a, 'tcx> ConstToPat<'a, 'tcx> {
                 // this pattern to a `PartialEq::eq` comparison and `PartialEq::eq` takes a
                 // reference. This makes the rest of the matching logic simpler as it doesn't have
                 // to figure out how to get a reference again.
-                ty::Adt(adt_def, _) if !self.type_marked_structural(pointee_ty) => {
+                ty::Adt(adt_def, _) if !self.type_marked_structural(pointer_ty) => {
                     if self.behind_reference.get() {
                         if self.include_lint_checks
                             && !self.saw_const_match_error.get()
@@ -501,7 +501,7 @@ impl<'a, 'tcx> ConstToPat<'a, 'tcx> {
             ty::Bool | ty::Char | ty::Int(_) | ty::Uint(_) | ty::FnDef(..) => {
                 PatKind::Constant { value: cv }
             }
-            ty::RawPtr(pointee) if pointee.ty.is_sized(tcx.at(span), param_env) => {
+            ty::RawPtr(pointer) if pointer.ty.is_sized(tcx.at(span), param_env) => {
                 PatKind::Constant { value: cv }
             }
             // FIXME: these can have very suprising behaviour where optimization levels or other

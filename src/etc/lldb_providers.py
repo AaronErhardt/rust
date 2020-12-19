@@ -304,7 +304,7 @@ class StdVecSyntheticProvider:
 
         self.data_ptr = unwrap_unique_or_non_null(self.buf.GetChildMemberWithName("ptr"))
 
-        self.element_type = self.data_ptr.GetType().GetPointeeType()
+        self.element_type = self.data_ptr.GetType().GetPointerType()
         self.element_type_size = self.element_type.GetByteSize()
 
     def has_children(self):
@@ -341,7 +341,7 @@ class StdSliceSyntheticProvider:
         self.length = self.valobj.GetChildMemberWithName("length").GetValueAsUnsigned()
         self.data_ptr = self.valobj.GetChildMemberWithName("data_ptr")
 
-        self.element_type = self.data_ptr.GetType().GetPointeeType()
+        self.element_type = self.data_ptr.GetType().GetPointerType()
         self.element_type_size = self.element_type.GetByteSize()
 
     def has_children(self):
@@ -394,7 +394,7 @@ class StdVecDequeSyntheticProvider:
 
         self.data_ptr = unwrap_unique_or_non_null(self.buf.GetChildMemberWithName("ptr"))
 
-        self.element_type = self.data_ptr.GetType().GetPointeeType()
+        self.element_type = self.data_ptr.GetType().GetPointerType()
         self.element_type_size = self.element_type.GetByteSize()
 
     def has_children(self):

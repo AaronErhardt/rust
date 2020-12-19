@@ -325,18 +325,18 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
             sym::offset => {
                 let ptr = self.read_scalar(args[0])?.check_init()?;
                 let offset_count = self.read_scalar(args[1])?.to_machine_isize(self)?;
-                let pointee_ty = substs.type_at(0);
+                let pointer_ty = substs.type_at(0);
 
-                let offset_ptr = self.ptr_offset_inbounds(ptr, pointee_ty, offset_count)?;
+                let offset_ptr = self.ptr_offset_inbounds(ptr, pointer_ty, offset_count)?;
                 self.write_scalar(offset_ptr, dest)?;
             }
             sym::arith_offset => {
                 let ptr = self.read_scalar(args[0])?.check_init()?;
                 let offset_count = self.read_scalar(args[1])?.to_machine_isize(self)?;
-                let pointee_ty = substs.type_at(0);
+                let pointer_ty = substs.type_at(0);
 
-                let pointee_size = i64::try_from(self.layout_of(pointee_ty)?.size.bytes()).unwrap();
-                let offset_bytes = offset_count.wrapping_mul(pointee_size);
+                let pointer_size = i64::try_from(self.layout_of(pointer_ty)?.size.bytes()).unwrap();
+                let offset_bytes = offset_count.wrapping_mul(pointer_size);
                 let offset_ptr = ptr.ptr_wrapping_signed_offset(offset_bytes, self);
                 self.write_scalar(offset_ptr, dest)?;
             }
@@ -382,9 +382,9 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
                     let b_offset = ImmTy::from_uint(b.offset.bytes(), usize_layout);
                     let (val, _overflowed, _ty) =
                         self.overflowing_binary_op(BinOp::Sub, a_offset, b_offset)?;
-                    let pointee_layout = self.layout_of(substs.type_at(0))?;
+                    let pointer_layout = self.layout_of(substs.type_at(0))?;
                     let val = ImmTy::from_scalar(val, isize_layout);
-                    let size = ImmTy::from_int(pointee_layout.size.bytes(), isize_layout);
+                    let size = ImmTy::from_int(pointer_layout.size.bytes(), isize_layout);
                     self.exact_div(val, size, dest)?;
                 }
             }
@@ -502,14 +502,14 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
     pub fn ptr_offset_inbounds(
         &self,
         ptr: Scalar<M::PointerTag>,
-        pointee_ty: Ty<'tcx>,
+        pointer_ty: Ty<'tcx>,
         offset_count: i64,
     ) -> InterpResult<'tcx, Scalar<M::PointerTag>> {
         // We cannot overflow i64 as a type's size must be <= isize::MAX.
-        let pointee_size = i64::try_from(self.layout_of(pointee_ty)?.size.bytes()).unwrap();
+        let pointer_size = i64::try_from(self.layout_of(pointer_ty)?.size.bytes()).unwrap();
         // The computed offset, in bytes, cannot overflow an isize.
         let offset_bytes =
-            offset_count.checked_mul(pointee_size).ok_or(err_ub!(PointerArithOverflow))?;
+            offset_count.checked_mul(pointer_size).ok_or(err_ub!(PointerArithOverflow))?;
         // The offset being in bounds cannot rely on "wrapping around" the address space.
         // So, first rule out overflows in the pointer arithmetic.
         let offset_ptr = ptr.ptr_signed_offset(offset_bytes, self)?;

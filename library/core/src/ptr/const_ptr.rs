@@ -368,8 +368,8 @@ impl<T: ?Sized> *const T {
     where
         T: Sized,
     {
-        let pointee_size = mem::size_of::<T>();
-        assert!(0 < pointee_size && pointee_size <= isize::MAX as usize);
+        let pointer_size = mem::size_of::<T>();
+        assert!(0 < pointer_size && pointer_size <= isize::MAX as usize);
         // SAFETY: the caller must uphold the safety contract for `ptr_offset_from`.
         unsafe { intrinsics::ptr_offset_from(self, origin) }
     }

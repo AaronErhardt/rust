@@ -760,10 +760,10 @@ extern "C" LLVMMetadataRef LLVMRustDIBuilderCreateTypedef(
 }
 
 extern "C" LLVMMetadataRef LLVMRustDIBuilderCreatePointerType(
-    LLVMRustDIBuilderRef Builder, LLVMMetadataRef PointeeTy,
+    LLVMRustDIBuilderRef Builder, LLVMMetadataRef PointerTy,
     uint64_t SizeInBits, uint32_t AlignInBits, unsigned AddressSpace,
     const char *Name, size_t NameLen) {
-  return wrap(Builder->createPointerType(unwrapDI<DIType>(PointeeTy),
+  return wrap(Builder->createPointerType(unwrapDI<DIType>(PointerTy),
                                          SizeInBits, AlignInBits,
                                          AddressSpace,
                                          StringRef(Name, NameLen)));
