@@ -29,8 +29,8 @@ pub use drop::TaggedPtr;
 /// # Safety
 ///
 /// The usize returned from `into_usize` must be a valid, dereferenceable,
-/// pointer to `<Self as Deref>::Target`. Note that pointers to `Pointee` must
-/// be thin, even though `Pointee` may not be sized.
+/// pointer to `<Self as Deref>::Target`. Note that pointers to `Pointer` must
+/// be thin, even though `Pointer` may not be sized.
 ///
 /// Note that the returned pointer from `into_usize` should be castable to `&mut
 /// <Self as Deref>::Target` if `Pointer: DerefMut`.
@@ -38,10 +38,10 @@ pub use drop::TaggedPtr;
 /// The BITS constant must be correct. At least `BITS` bits, least-significant,
 /// must be zero on all returned pointers from `into_usize`.
 ///
-/// For example, if the alignment of `Pointee` is 2, then `BITS` should be 1.
+/// For example, if the alignment of `Pointer` is 2, then `BITS` should be 1.
 pub unsafe trait Pointer: Deref {
     /// Most likely the value you want to use here is the following, unless
-    /// your Pointee type is unsized (e.g., `ty::List<T>` in rustc) in which
+    /// your Pointer type is unsized (e.g., `ty::List<T>` in rustc) in which
     /// case you'll need to manually figure out what the right type to pass to
     /// align_of is.
     ///
@@ -61,7 +61,7 @@ pub unsafe trait Pointer: Deref {
 
     /// This provides a reference to the `Pointer` itself, rather than the
     /// `Deref::Target`. It is used for cases where we want to call methods that
-    /// may be implement differently for the Pointer than the Pointee (e.g.,
+    /// may be implement differently for the Pointer than the Pointer (e.g.,
     /// `Rc::clone` vs cloning the inner value).
     ///
     /// # Safety

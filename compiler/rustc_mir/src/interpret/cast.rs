@@ -263,7 +263,7 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
         &mut self,
         src: OpTy<'tcx, M::PointerTag>,
         dest: PlaceTy<'tcx, M::PointerTag>,
-        // The pointee types
+        // The pointer types
         source_ty: Ty<'tcx>,
         cast_ty: Ty<'tcx>,
     ) -> InterpResult<'tcx> {

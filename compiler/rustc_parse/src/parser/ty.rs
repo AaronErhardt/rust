@@ -376,7 +376,7 @@ impl<'a> Parser<'a> {
         let mutbl = self.parse_mutability();
         if self.token.is_lifetime() && mutbl == Mutability::Mut && opt_lifetime.is_none() {
             // A lifetime is invalid here: it would be part of a bare trait bound, which requires
-            // it to be followed by a plus, but we disallow plus in the pointee type.
+            // it to be followed by a plus, but we disallow plus in the pointer type.
             // So we can handle this case as an error here, and suggest `'a mut`.
             // If there *is* a plus next though, handling the error later provides better suggestions
             // (like adding parentheses)

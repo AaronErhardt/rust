@@ -231,7 +231,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                                 // example, `&'a fmt::Debug + Send => &'a fmt::Debug`.
 
                                 // HACK(eddyb) have to bitcast pointers
-                                // until LLVM removes pointee types.
+                                // until LLVM removes pointer types.
                                 let lldata = bx.pointercast(
                                     lldata,
                                     bx.cx().scalar_pair_element_backend_type(cast, 0, true),

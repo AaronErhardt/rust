@@ -56,6 +56,6 @@ fn main() {
     // No size_of calls (Should not trigger the lint)
     unsafe { copy(x.as_ptr(), y.as_mut_ptr(), SIZE) };
 
-    // Different types for pointee and size_of (Should not trigger the lint)
+    // Different types for pointer and size_of (Should not trigger the lint)
     unsafe { y.as_mut_ptr().write_bytes(0u8, size_of::<u16>() / 2 * SIZE) };
 }

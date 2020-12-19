@@ -80,7 +80,7 @@ pub enum ArgExtension {
 pub struct ArgAttributes {
     pub regular: ArgAttribute,
     pub arg_ext: ArgExtension,
-    /// The minimum size of the pointee, guaranteed to be valid for the duration of the whole call
+    /// The minimum size of the pointer, guaranteed to be valid for the duration of the whole call
     /// (corresponding to LLVM's dereferenceable and dereferenceable_or_null attributes).
     pub pointee_size: Size,
     pub pointee_align: Option<Align>,
@@ -451,7 +451,7 @@ impl<'a, Ty> ArgAbi<'a, Ty> {
         attrs.pointee_size = self.layout.size;
         // FIXME(eddyb) We should be doing this, but at least on
         // i686-pc-windows-msvc, it results in wrong stack offsets.
-        // attrs.pointee_align = Some(self.layout.align.abi);
+        // attrs.pointer_align = Some(self.layout.align.abi);
 
         let extra_attrs = self.layout.is_unsized().then_some(ArgAttributes::new());
 

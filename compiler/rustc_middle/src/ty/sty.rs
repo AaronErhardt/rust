@@ -113,13 +113,13 @@ pub enum TyKind<'tcx> {
     /// An unsized FFI type that is opaque to Rust. Written as `extern type T`.
     Foreign(DefId),
 
-    /// The pointee of a string slice. Written as `str`.
+    /// The pointer of a string slice. Written as `str`.
     Str,
 
     /// An array with the given length. Written as `[T; n]`.
     Array(Ty<'tcx>, &'tcx ty::Const<'tcx>),
 
-    /// The pointee of an array slice. Written as `[T]`.
+    /// The pointer of an array slice. Written as `[T]`.
     Slice(Ty<'tcx>),
 
     /// A raw pointer. Written as `*mut T` or `*const T`

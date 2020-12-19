@@ -209,7 +209,7 @@ pub fn unsize_thin_ptr<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>>(
                 result = Some(unsize_thin_ptr(bx, src, src_f.ty, dst_f.ty));
             }
             let (lldata, llextra) = result.unwrap();
-            // HACK(eddyb) have to bitcast pointers until LLVM removes pointee types.
+            // HACK(eddyb) have to bitcast pointers until LLVM removes pointer types.
             // FIXME(eddyb) move these out of this `match` arm, so they're always
             // applied, uniformly, no matter the source/destination types.
             (

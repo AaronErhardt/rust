@@ -2147,7 +2147,7 @@ where
                     assert!(i < this.fields.count());
 
                     // Reuse the fat `*T` type as its own thin pointer data field.
-                    // This provides information about, e.g., DST struct pointees
+                    // This provides information about, e.g., DST struct pointers
                     // (which may have no non-DST form), and will work as long
                     // as the `Abi` or `FieldsShape` is checked by users.
                     if i == 0 {

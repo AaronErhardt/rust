@@ -1,7 +1,7 @@
 use crate::marker::Unsize;
 
 /// Trait that indicates that this is a pointer or a wrapper for one,
-/// where unsizing can be performed on the pointee.
+/// where unsizing can be performed on the pointer.
 ///
 /// See the [DST coercion RFC][dst-coerce] and [the nomicon entry on coercion][nomicon-coerce]
 /// for more details.

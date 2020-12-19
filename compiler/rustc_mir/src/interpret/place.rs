@@ -148,7 +148,7 @@ impl<Tag> MemPlace<Tag> {
             MemPlaceMeta::Meta(meta) => Immediate::ScalarPair(self.ptr.into(), meta.into()),
             MemPlaceMeta::Poison => bug!(
                 "MPlaceTy::dangling may never be used to produce a \
-                place that will have the address of its pointee taken"
+                place that will have the address of its pointer taken"
             ),
         }
     }

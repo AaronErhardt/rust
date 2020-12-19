@@ -126,7 +126,7 @@ impl<'mir, 'tcx: 'mir, M: Machine<'mir, 'tcx>> InterpCx<'mir, 'tcx, M> {
         &self,
         vtable: Scalar<M::PointerTag>,
     ) -> InterpResult<'tcx, (ty::Instance<'tcx>, Ty<'tcx>)> {
-        // We don't care about the pointee type; we just want a pointer.
+        // We don't care about the pointer type; we just want a pointer.
         let vtable = self
             .memory
             .check_ptr_access(

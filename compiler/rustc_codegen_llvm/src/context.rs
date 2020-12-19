@@ -54,7 +54,7 @@ pub struct CodegenCx<'ll, 'tcx> {
     /// Key is a Value holding a `*T`,
     /// Val is a Value holding a `*[T]`.
     ///
-    /// Needed because LLVM loses pointer->pointee association
+    /// Needed because LLVM loses pointer->pointer association
     /// when we ptrcast, and we have to ptrcast during codegen
     /// of a `[T]` const because we form a slice, a `(*T,usize)` pair, not
     /// a pointer to an LLVM array type. Similar for trait objects.

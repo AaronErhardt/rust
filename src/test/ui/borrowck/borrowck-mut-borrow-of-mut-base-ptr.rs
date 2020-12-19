@@ -1,4 +1,4 @@
-// Test that attempt to mutably borrow `&mut` pointer while pointee is
+// Test that attempt to mutably borrow `&mut` pointer while pointer is
 // borrowed yields an error.
 //
 // Example from compiler/rustc_borrowck/borrowck/README.md

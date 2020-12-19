@@ -31,7 +31,7 @@ macro_rules! len {
             // multiple of the type size, it can optimize `len() == 0` down to
             // `start == end` instead of `(end - start) < size`.
             // SAFETY: By the type invariant, the pointers are aligned so the
-            //         distance between them must be a multiple of pointee size
+            //         distance between them must be a multiple of pointer size
             unsafe { exact_div(diff, size) }
         }
     }};

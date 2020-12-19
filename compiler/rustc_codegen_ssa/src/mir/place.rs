@@ -122,7 +122,7 @@ impl<'a, 'tcx, V: CodegenObject> PlaceRef<'tcx, V> {
                 _ => bx.struct_gep(self.llval, bx.cx().backend_field_index(self.layout, ix)),
             };
             PlaceRef {
-                // HACK(eddyb): have to bitcast pointers until LLVM removes pointee types.
+                // HACK(eddyb): have to bitcast pointers until LLVM removes pointer types.
                 llval: bx.pointercast(llval, bx.cx().type_ptr_to(bx.cx().backend_type(field))),
                 llextra: if bx.cx().type_has_metadata(field.ty) { self.llextra } else { None },
                 layout: field,

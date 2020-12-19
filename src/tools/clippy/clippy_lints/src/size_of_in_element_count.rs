@@ -123,8 +123,8 @@ impl<'tcx> LateLintPass<'tcx> for SizeOfInElementCount {
 
         if_chain! {
             // Find calls to functions with an element count parameter and get
-            // the pointee type and count parameter expression
             if let Some((pointee_ty, count_expr)) = get_pointee_ty_and_count_expr(cx, expr);
+            // the pointer type and count parameter expression
 
             // Find a size_of call in the count parameter expression and
             // check that it's the same type

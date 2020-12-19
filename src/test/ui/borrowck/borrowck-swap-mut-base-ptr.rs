@@ -1,4 +1,4 @@
-// Test that attempt to swap `&mut` pointer while pointee is borrowed
+// Test that attempt to swap `&mut` pointer while pointer is borrowed
 // yields an error.
 //
 // Example from compiler/rustc_borrowck/borrowck/README.md
